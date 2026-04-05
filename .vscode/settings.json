@@ -1,0 +1,16 @@
+{
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "name": "SheCares Database",
+            "driver": "SQLite",
+            "database": "${workspaceFolder:shecares.db}",
+            "previewLimit": 50
+        }
+    ],
+    "files.associations": {
+        "*.db": "sqlite"
+    },
+    "sqlite.openDatabaseInNewTab": true,
+    "python-envs.defaultEnvManager": "ms-python.python:system"
+}

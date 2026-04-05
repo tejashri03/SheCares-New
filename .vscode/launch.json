@@ -1,0 +1,45 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Start Backend",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/dynamic_app.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/backend"
+            }
+        },
+        {
+            "name": "Start Live Dashboard",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/live_dashboard.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/backend"
+            }
+        },
+        {
+            "name": "Start Frontend",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/frontend/node_modules/.bin/npm",
+            "args": ["run", "dev"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/frontend",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Start Full Stack",
+            "configurations": ["Start Backend", "Start Live Dashboard", "Start Frontend"]
+        }
+    ]
+}

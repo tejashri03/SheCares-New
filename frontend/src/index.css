@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-light text-gray-800 font-sans;
+  }
+  
+  * {
+    @apply border-pink-200;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-pink text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-pink-600 px-6 py-3 rounded-full font-semibold border-2 border-pink-300 hover:bg-pink-50 transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300;
+  }
+}
+
+body{
+font-family: Arial;
+background:#fff0f6;
+margin:0;
+}
+
+input{
+
+width:100%;
+margin:5px 0;
+border:1px solid #ccc;
+
+}
+
+button{
+
+background:#ff4d8d;
+color:white;
+border:none;
+padding:10px;
+border-radius:6px;
+cursor:pointer;
+
+}

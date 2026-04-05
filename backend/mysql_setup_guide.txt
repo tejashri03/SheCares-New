@@ -1,0 +1,78 @@
+MYSQL SETUP GUIDE FOR SHECARES
+===============================
+
+🔧 AFTER INSTALLING MYSQL:
+
+1. OPEN MYSQL WORKBENCH
+   - Launch MySQL Workbench
+   - Create new connection:
+     * Connection Name: SheCares
+     * Hostname: localhost
+     * Port: 3306
+     * Username: root
+     * Password: root@325
+
+2. CREATE DATABASE
+   - Connect to MySQL
+   - Run this SQL:
+     CREATE DATABASE shecares_db;
+     
+3. CREATE TABLES
+   - Select shecares_db database
+   - Run these SQL commands:
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    age INT,
+    login_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE pcos_predictions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    age INT,
+    bmi DECIMAL(5,2),
+    prediction INT,
+    probability DECIMAL(5,4),
+    risk_level VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+CREATE TABLE health_profiles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    height DECIMAL(5,2),
+    weight DECIMAL(5,2),
+    dietary_preferences VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+CREATE TABLE nutrition_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    prediction_id INT,
+    plan_data TEXT,
+    recommendations TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (prediction_id) REFERENCES pcos_predictions (id)
+);
+
+4. RUN PYTHON BACKEND
+   python backend/mysql_backend.py
+
+5. VERIFY IN WORKBENCH
+   - You should see shecares_db
+   - All tables should be visible
+   - Data will appear when users register
+
+🎯 TROUBLESHOOTING:
+- If connection fails: Check MySQL service is running
+- If password error: Verify password is 'root@325'
+- If port error: Make sure port 3306 is available
