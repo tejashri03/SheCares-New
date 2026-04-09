@@ -312,11 +312,11 @@ const PeriodTracker = () => {
                 ))}
               </div>
             </div>
-            <div className="text-6xl opacity-50">
-              {getPhaseForDate(new Date()) === 'menstrual' && <Droplet />}
-              {getPhaseForDate(new Date()) === 'follicular' && <TrendingUp />}
-              {getPhaseForDate(new Date()) === 'ovulatory' && <Heart />}
-              {getPhaseForDate(new Date()) === 'luteal' && <Clock />}
+            <div className="text-6xl opacity-75 text-slate-400">
+              {getPhaseForDate(new Date()) === 'menstrual' && <Droplet className="text-pink-400" />}
+              {getPhaseForDate(new Date()) === 'follicular' && <TrendingUp className="text-green-400" />}
+              {getPhaseForDate(new Date()) === 'ovulatory' && <Heart className="text-blue-400" />}
+              {getPhaseForDate(new Date()) === 'luteal' && <Clock className="text-purple-400" />}
             </div>
           </div>
         </motion.div>

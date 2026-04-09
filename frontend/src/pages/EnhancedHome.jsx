@@ -132,6 +132,18 @@ const EnhancedHome = () => {
 
   const spotlightFeature = features[hoveredFeature ?? 0];
 
+  const getIconColor = (gradient) => {
+    const colorMap = {
+      'from-rose-500 to-pink-600': 'text-rose-500',
+      'from-emerald-500 to-teal-600': 'text-emerald-500',
+      'from-purple-500 to-indigo-600': 'text-purple-500',
+      'from-orange-500 to-red-600': 'text-orange-500',
+      'from-blue-500 to-cyan-600': 'text-blue-500',
+      'from-violet-500 to-purple-600': 'text-violet-500'
+    };
+    return colorMap[gradient] || 'text-gray-600';
+  };
+
   const getAssistantReply = (query) => {
     const normalized = query.toLowerCase();
 
@@ -373,7 +385,7 @@ const EnhancedHome = () => {
                   <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 transition-opacity duration-300 ${hoveredFeature === index ? 'opacity-10' : ''}`} />
                   <div className="flex items-center justify-between mb-4">
                     <div className={`p-3 bg-white rounded-2xl shadow-md`}>
-                      <feature.icon className={`w-8 h-8 bg-gradient-to-r ${feature.color} bg-clip-text text-transparent`} />
+                      <feature.icon className={`w-8 h-8 ${getIconColor(feature.color)}`} />
                     </div>
                     <span className="bg-white/80 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-gray-700">
                       {feature.badge}
@@ -506,7 +518,7 @@ const EnhancedHome = () => {
                 whileHover={{ scale: 1.05 }}
                 className={`bg-gradient-to-br ${tip.color} p-6 rounded-2xl text-white shadow-lg`}
               >
-                <tip.icon className="w-12 h-12 mb-4" />
+                <tip.icon className="w-12 h-12 mb-4 text-white" />
                 <p className="text-sm font-medium leading-relaxed">{tip.text}</p>
               </motion.div>
             ))}

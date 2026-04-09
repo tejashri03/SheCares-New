@@ -210,10 +210,10 @@ const EnhancedPCOS = () => {
           localStorage.setItem(predictionStorageKey(user.id), JSON.stringify(latestPrediction));
         }
         setPrediction(latestPrediction);
+        setStep(4);
         if (user) {
           console.log(`Enhanced prediction saved for user: ${user.name} (ID: ${user.id})`);
         }
-        navigate('/nutrition');
       } else {
         alert('Error making prediction. Please try again.');
       }
@@ -783,6 +783,13 @@ const EnhancedPCOS = () => {
                   >
                     <FileText className="w-5 h-5" />
                     Print Results
+                  </button>
+                  <button
+                    onClick={() => navigate('/nutrition')}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all duration-300"
+                  >
+                    <Utensils className="w-5 h-5" />
+                    View Nutrition Plan
                   </button>
                 </div>
               </>

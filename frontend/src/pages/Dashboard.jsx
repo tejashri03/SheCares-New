@@ -437,15 +437,6 @@ const Dashboard = () => {
             <div>
               <h1 className="text-4xl font-extrabold tracking-tight text-slate-800">Welcome back, {user?.name || "User"}</h1>
               <p className="mt-2 text-slate-600">Personalized insights generated from your real tracking and prediction history.</p>
-              <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 shadow-sm">
-                <p className="font-semibold text-slate-800">Dashboard Notes</p>
-                <p className="mt-2">
-                  Cycle regularity and symptom tracking now use your logged period history when available. If cycle logs are limited, scores are estimated from your latest PCOS assessment data.
-                </p>
-                <p className="mt-2">
-                  The underlying prediction model is a <strong>Random Forest classifier</strong> trained on CSV dataset features.
-                </p>
-              </div>
             </div>
             <div className="relative flex items-center gap-3">
               <button
@@ -501,16 +492,6 @@ const Dashboard = () => {
               <p className="mt-1 text-xs text-slate-500">{metric.sub}</p>
             </motion.div>
           ))}
-        </section>
-
-        <section className="rounded-3xl bg-white p-6 shadow-lg">
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Model Training</h2>
-          <p className="text-sm text-slate-600">
-            The PCOS prediction model is built using a <strong>Random Forest classifier</strong> implemented with scikit-learn. It is trained from CSV dataset features, then used to score your risk and generate personalized insights.
-          </p>
-          <p className="mt-2 text-sm text-slate-500">
-            This helps the dashboard provide data-based cycle regularity and symptom tracking insights.
-          </p>
         </section>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">

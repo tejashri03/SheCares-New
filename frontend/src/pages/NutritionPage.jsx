@@ -236,7 +236,22 @@ function NutritionPage() {
 
 			{!latestPrediction && (
 					<section className="rounded-3xl border border-sky-200 bg-sky-50 p-8 text-center shadow-lg">
-						<h2 className="text-2xl font-bold text-sky-900">Prediction found, but nutrition plan is missing</h2>
+						<h2 className="text-2xl font-bold text-sky-900">No Assessment Found</h2>
+						<p className="mt-2 text-sky-800">
+							Please run a PCOS assessment first to generate personalized nutrition recommendations.
+						</p>
+						<Link
+							to="/pcos"
+							className="mt-5 inline-block rounded-full bg-sky-600 px-6 py-3 font-semibold text-white transition hover:bg-sky-700"
+						>
+							Start PCOS Assessment
+						</Link>
+					</section>
+				)}
+
+			{latestPrediction && !hasNutritionData && (
+					<section className="rounded-3xl border border-sky-200 bg-sky-50 p-8 text-center shadow-lg">
+						<h2 className="text-2xl font-bold text-sky-900">Nutrition Plan Not Available</h2>
 						<p className="mt-2 text-sky-800">
 							Run a new PCOS assessment to generate full nutrition recommendations and meal breakdown.
 						</p>
