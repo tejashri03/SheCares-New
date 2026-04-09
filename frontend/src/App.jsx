@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import PeriodTracker from "./pages/PeriodTracker";
 import EnhancedPCOS from "./pages/EnhancedPCOS";
 import NutritionPage from "./pages/NutritionPage";
+import FitnessPage from "./pages/FitnessPage";
 import Dashboard from "./pages/Dashboard";
 import ReportPage from "./pages/ReportPage";
 import Awareness from "./pages/Awareness";
@@ -21,6 +22,15 @@ function ProtectedRoute({ children }) {
 function PublicRoute({ children }) {
   const { isAuthenticated } = useAuth();
   return !isAuthenticated ? children : <Navigate to="/dashboard" />;
+}
+
+function ProtectedLayout({ children }) {
+  return (
+    <div className="min-h-screen">
+      <Navbar />
+      <main className="md:pl-72">{children}</main>
+    </div>
+  );
 }
 
 function App() {
@@ -43,50 +53,51 @@ function App() {
         {/* Protected Routes */}
         <Route path="/period-tracker" element={
           <ProtectedRoute>
-            <>
-              <Navbar />
+            <ProtectedLayout>
               <PeriodTracker />
-            </>
+            </ProtectedLayout>
           </ProtectedRoute>
         } />
         <Route path="/pcos" element={
           <ProtectedRoute>
-            <>
-              <Navbar />
+            <ProtectedLayout>
               <EnhancedPCOS />
-            </>
+            </ProtectedLayout>
           </ProtectedRoute>
         } />
         <Route path="/nutrition" element={
           <ProtectedRoute>
-            <>
-              <Navbar />
+            <ProtectedLayout>
               <NutritionPage />
-            </>
+            </ProtectedLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/fitness" element={
+          <ProtectedRoute>
+            <ProtectedLayout>
+              <FitnessPage />
+            </ProtectedLayout>
           </ProtectedRoute>
         } />
         <Route path="/dashboard" element={
           <ProtectedRoute>
-            <>
-              <Navbar />
+            <ProtectedLayout>
               <Dashboard />
-            </>
+            </ProtectedLayout>
           </ProtectedRoute>
         } />
         <Route path="/awareness" element={
           <ProtectedRoute>
-            <>
-              <Navbar />
+            <ProtectedLayout>
               <Awareness />
-            </>
+            </ProtectedLayout>
           </ProtectedRoute>
         } />
         <Route path="/report" element={
           <ProtectedRoute>
-            <>
-              <Navbar />
+            <ProtectedLayout>
               <ReportPage />
-            </>
+            </ProtectedLayout>
           </ProtectedRoute>
         } />
       </Routes>

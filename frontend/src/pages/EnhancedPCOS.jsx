@@ -6,9 +6,13 @@ import {
   ChevronRight, Sparkles, Zap, Target, Award, Pill, Moon, Sun, User
 } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
 
+const predictionStorageKey = (userId) => `shecares_latest_prediction_${userId}`;
+
 const EnhancedPCOS = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     age: '',
@@ -36,9 +40,32 @@ const EnhancedPCOS = () => {
   });
 
   const [prediction, setPrediction] = useState(null);
+  const [previousPrediction, setPreviousPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const stored = localStorage.getItem(predictionStorageKey(user.id));
+    if (!stored) return;
+
+    try {
+      const parsed = JSON.parse(stored);
+      if (!parsed) return;
+
+      const snapshot = parsed.input_snapshot || parsed.input_data || {};
+      setPrediction(parsed);
+      setPreviousPrediction(parsed);
+
+      setFormData((prev) => ({
+        ...prev,
+        ...snapshot
+      }));
+    } catch (error) {
+      console.error('Failed to load previous prediction snapshot', error);
+    }
+  }, [user?.id]);
 
   const steps = [
     { title: 'Basic Information', icon: User, description: 'Tell us about yourself' },
@@ -72,6 +99,37 @@ const EnhancedPCOS = () => {
 
   const prevStep = () => {
     setStep(step - 1);
+  };
+
+  const startRetakeTest = () => {
+    // Clear the form but keep previousPrediction for display
+    setPrediction(null);
+    setStep(1);
+    setFormData({
+      age: '',
+      bmi: '',
+      weight_gain: '',
+      hair_growth: '',
+      skin_darkening: '',
+      hair_loss: '',
+      pimples: '',
+      mood_swings: '',
+      fast_food: '',
+      regular_exercise: '',
+      diet_type: 'balanced',
+      sleep_hours: '7',
+      cycle_length: '',
+      cycle_regular: '1',
+      missed_periods: '0',
+      period_duration: '',
+      stress_level: '3',
+      family_history_pcos: '0',
+      diabetes_history: '0',
+      thyroid_history: '0',
+      blood_sugar: '',
+      testosterone_level: ''
+    });
+    setErrors({});
   };
 
   const handleInputChange = (e) => {
@@ -148,12 +206,14 @@ const EnhancedPCOS = () => {
           input_snapshot: formData,
           saved_at: new Date().toISOString()
         };
-        localStorage.setItem('shecares_latest_prediction', JSON.stringify(latestPrediction));
+        if (user?.id) {
+          localStorage.setItem(predictionStorageKey(user.id), JSON.stringify(latestPrediction));
+        }
         setPrediction(latestPrediction);
-        setStep(4); // Move to results step
         if (user) {
           console.log(`Enhanced prediction saved for user: ${user.name} (ID: ${user.id})`);
         }
+        navigate('/nutrition');
       } else {
         alert('Error making prediction. Please try again.');
       }
@@ -192,19 +252,20 @@ const EnhancedPCOS = () => {
   };
 
   const downloadReport = async () => {
-    if (user && prediction?.prediction_id) {
+    if (user) {
       try {
         const response = await axios.get(`http://127.0.0.1:5000/download-report/${user.id}`, {
           responseType: 'blob'
         });
-        
+
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `SheCares_Report_${user.name}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute('download', `SheCares_Report_${user.name}_${new Date().toISOString().split('T')[0]}.pdf`);
         document.body.appendChild(link);
         link.click();
         link.remove();
+        window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Download error:', error);
         alert('Error downloading report. Please try again.');
@@ -794,6 +855,50 @@ const EnhancedPCOS = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl shadow-xl p-8"
         >
+          {/* Previous Assessment Data Display */}
+          {previousPrediction && step < 4 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200"
+            >
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-emerald-900 mb-3 flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2 text-emerald-600" />
+                    Your Last Assessment Results
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-xs text-gray-600 font-medium">Risk Level</p>
+                      <p className="text-sm font-bold text-emerald-700">{previousPrediction.risk_level}</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-xs text-gray-600 font-medium">Confidence</p>
+                      <p className="text-sm font-bold text-emerald-700">{(previousPrediction.confidence * 100).toFixed(1)}%</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-xs text-gray-600 font-medium">Probability</p>
+                      <p className="text-sm font-bold text-emerald-700">{(previousPrediction.probability * 100).toFixed(1)}%</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-xs text-gray-600 font-medium">Date</p>
+                      <p className="text-sm font-bold text-emerald-700">
+                        {previousPrediction.saved_at ? new Date(previousPrediction.saved_at).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={startRetakeTest}
+                  className="mt-4 md:mt-0 md:ml-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all duration-300 whitespace-nowrap"
+                >
+                  <Zap className="w-5 h-5" />
+                  Retake Test
+                </button>
+              </div>
+            </motion.div>
+          )}
           <AnimatePresence mode="wait">
             {renderStepContent()}
           </AnimatePresence>

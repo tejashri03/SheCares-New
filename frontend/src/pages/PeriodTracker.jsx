@@ -4,15 +4,22 @@ import { Calendar as CalendarIcon, Clock, TrendingUp, Heart, Droplet, AlertCircl
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, differenceInDays } from 'date-fns';
+import { useAuth } from '../components/AuthContext';
+
+const periodDataStorageKey = (userId) => `periodData_${userId}`;
+const userProfileStorageKey = (userId) => `userProfile_${userId}`;
 
 const PeriodTracker = () => {
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [periodData, setPeriodData] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [currentView, setCurrentView] = useState('calendar');
   const [age, setAge] = useState('');
-  const [cycleLength, setCycleLength] = useState(28);
-  const [periodLength, setPeriodLength] = useState(5);
+  const [cycleLength, setCycleLength] = useState(0);
+  const [periodLength, setPeriodLength] = useState(0);
+  const [profileMessage, setProfileMessage] = useState('');
+  const [entryMessage, setEntryMessage] = useState('');
   const [symptoms, setSymptoms] = useState({
     cramps: false,
     headache: false,
@@ -30,24 +37,67 @@ const PeriodTracker = () => {
   });
 
   useEffect(() => {
-    const savedData = localStorage.getItem('periodData');
+    if (!user?.id) {
+      setPeriodData([]);
+      setAge('');
+      setCycleLength(0);
+      setPeriodLength(0);
+      setProfileMessage('');
+      setEntryMessage('');
+      return;
+    }
+
+    const savedData = localStorage.getItem(periodDataStorageKey(user.id));
     if (savedData) {
       setPeriodData(JSON.parse(savedData));
+    } else {
+      setPeriodData([]);
     }
-    
-    const savedProfile = localStorage.getItem('userProfile');
+
+    const savedProfile = localStorage.getItem(userProfileStorageKey(user.id));
     if (savedProfile) {
       const profile = JSON.parse(savedProfile);
       setAge(profile.age || '');
-      setCycleLength(profile.cycleLength || 28);
-      setPeriodLength(profile.periodLength || 5);
+      setCycleLength(Number(profile.cycleLength) || 0);
+      setPeriodLength(Number(profile.periodLength) || 0);
+    } else {
+      setAge('');
+      setCycleLength(0);
+      setPeriodLength(0);
     }
-  }, []);
+  }, [user?.id]);
+
+  const getTodayStart = () => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  };
+
+  const clampToTodayOrPast = (value) => {
+    const date = new Date(value);
+    const todayStart = getTodayStart();
+    const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return dateStart > todayStart ? todayStart : dateStart;
+  };
+
+  const openAddModal = () => {
+    const safeDate = clampToTodayOrPast(selectedDate || new Date());
+    setNewEntry((prev) => ({ ...prev, date: safeDate }));
+    setEntryMessage('');
+    setShowAddModal(true);
+  };
 
   const savePeriodEntry = () => {
+    const safeDate = clampToTodayOrPast(newEntry.date);
+    const todayStart = getTodayStart();
+
+    if (safeDate > todayStart) {
+      setEntryMessage('Future dates are not allowed. Please choose today or any past date.');
+      return;
+    }
+
     const entry = {
       id: Date.now(),
-      date: newEntry.date,
+      date: safeDate,
       flow: newEntry.flow,
       symptoms: newEntry.symptoms,
       notes: newEntry.notes,
@@ -56,7 +106,10 @@ const PeriodTracker = () => {
 
     const updatedData = [...periodData, entry];
     setPeriodData(updatedData);
-    localStorage.setItem('periodData', JSON.stringify(updatedData));
+    if (user?.id) {
+      localStorage.setItem(periodDataStorageKey(user.id), JSON.stringify(updatedData));
+    }
+    setEntryMessage('');
     setShowAddModal(false);
     setNewEntry({
       date: new Date(),
@@ -67,11 +120,27 @@ const PeriodTracker = () => {
   };
 
   const saveUserProfile = () => {
-    const profile = { age, cycleLength, periodLength };
-    localStorage.setItem('userProfile', JSON.stringify(profile));
+    const parsedCycleLength = Number(cycleLength);
+    const parsedPeriodLength = Number(periodLength);
+    const profile = {
+      age: age ? Number(age) : '',
+      cycleLength: Number.isFinite(parsedCycleLength) ? parsedCycleLength : 0,
+      periodLength: Number.isFinite(parsedPeriodLength) ? parsedPeriodLength : 0
+    };
+
+    if (user?.id) {
+      localStorage.setItem(userProfileStorageKey(user.id), JSON.stringify(profile));
+      setProfileMessage('Profile saved successfully.');
+    } else {
+      setProfileMessage('Please login first to save your profile.');
+    }
   };
 
   const predictNextPeriod = () => {
+    if (!cycleLength || cycleLength <= 0) {
+      return new Date();
+    }
+
     const lastPeriod = periodData
       .filter(entry => entry.type === 'period')
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
@@ -198,7 +267,7 @@ const PeriodTracker = () => {
               <input
                 type="number"
                 value={cycleLength}
-                onChange={(e) => setCycleLength(parseInt(e.target.value))}
+                onChange={(e) => setCycleLength(Number(e.target.value) || 0)}
                 className="input-field"
                 min="20"
                 max="40"
@@ -209,7 +278,7 @@ const PeriodTracker = () => {
               <input
                 type="number"
                 value={periodLength}
-                onChange={(e) => setPeriodLength(parseInt(e.target.value))}
+                onChange={(e) => setPeriodLength(Number(e.target.value) || 0)}
                 className="input-field"
                 min="1"
                 max="10"
@@ -219,6 +288,9 @@ const PeriodTracker = () => {
           <button onClick={saveUserProfile} className="btn-primary mt-4">
             Save Profile
           </button>
+          {profileMessage && (
+            <p className="mt-3 text-sm font-medium text-emerald-600">{profileMessage}</p>
+          )}
         </motion.div>
 
         {/* Current Phase */}
@@ -261,7 +333,7 @@ const PeriodTracker = () => {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-800">Calendar</h2>
                 <button
-                  onClick={() => setShowAddModal(true)}
+                  onClick={openAddModal}
                   className="btn-primary flex items-center"
                 >
                   <Plus size={20} className="mr-2" />
@@ -381,9 +453,15 @@ const PeriodTracker = () => {
                   <input
                     type="date"
                     value={format(newEntry.date, 'yyyy-MM-dd')}
-                    onChange={(e) => setNewEntry({...newEntry, date: new Date(e.target.value)})}
+                    onChange={(e) => {
+                      const picked = new Date(e.target.value);
+                      setNewEntry({ ...newEntry, date: clampToTodayOrPast(picked) });
+                      setEntryMessage('');
+                    }}
                     className="input-field"
+                    max={format(new Date(), 'yyyy-MM-dd')}
                   />
+                  <p className="mt-1 text-xs text-slate-500">You can only log period for today or past dates.</p>
                 </div>
 
                 <div>
@@ -410,6 +488,10 @@ const PeriodTracker = () => {
                   />
                 </div>
               </div>
+
+              {entryMessage && (
+                <p className="mt-3 text-sm font-medium text-rose-600">{entryMessage}</p>
+              )}
 
               <div className="flex gap-3 mt-6">
                 <button

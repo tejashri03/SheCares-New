@@ -53,14 +53,26 @@ export const AuthProvider = ({ children }) => {
 
         return { success: true, user: newUser };
       } else {
-        throw new Error(response.data.error || 'Registration failed');
+        throw new Error(response.data.error || response.data.message || 'Registration failed');
       }
     } catch (error) {
-      if (error.response && error.response.data.error) {
-        throw new Error(error.response.data.error);
+      if (error.response && error.response.data) {
+        const serverMessage = error.response.data.error || error.response.data.message;
+        if (serverMessage) {
+          throw new Error(serverMessage);
+        }
+        throw new Error(`Registration failed (${error.response.status}). Please try again.`);
       }
       throw new Error('Registration failed. Please try again.');
     }
+  };
+
+  const clearUserStorage = (userId) => {
+    if (!userId) return;
+
+    localStorage.removeItem(`shecares_latest_prediction_${userId}`);
+    localStorage.removeItem(`periodData_${userId}`);
+    localStorage.removeItem(`userProfile_${userId}`);
   };
 
   const login = async (email, password) => {
@@ -92,6 +104,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    if (user?.id) {
+      clearUserStorage(user.id);
+    }
     localStorage.removeItem('shecares_user');
     setUser(null);
     setIsAuthenticated(false);

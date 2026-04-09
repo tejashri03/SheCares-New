@@ -99,7 +99,12 @@ const Register = () => {
       });
       navigate('/dashboard');
     } catch (error) {
-      setErrors({ general: error.message });
+      const message = error.message || 'Registration failed. Please try again.';
+      if (message.toLowerCase().includes('email')) {
+        setErrors({ email: message });
+      } else {
+        setErrors({ general: message });
+      }
     } finally {
       setLoading(false);
     }
